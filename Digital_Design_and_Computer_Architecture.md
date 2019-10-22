@@ -135,6 +135,7 @@ As a sequence, if the OS saves the architectural state at some point in the prog
     * ori
     * xori 
 * Shift instructions (* / power of 2)   
+  R-Type operations
   [Shift instructions](https://slideplayer.com/slide/8236763/)  
   * 2 register operands + shamt (no. of bits)
   * 3 register operands 
@@ -161,6 +162,7 @@ As a sequence, if the OS saves the architectural state at some point in the prog
     lui $s0, 0xnnnn         load upper immediate instruction (Set the lower half to 0)
     ori $s0, $s0, 0xmmmm    combination (Note: zero extension for immediate in logical operatoins)
     --> $s0 = 0xnnnnmmmm
+    
 * Multiplication / Division instructions
   * 2 special registers *hi* & *lo* 
   * Multiplication 
@@ -178,9 +180,14 @@ As a sequence, if the OS saves the architectural state at some point in the prog
     *  hi and lo are technically part of the architectural state; however, we generally ignore these registers 
 
 #### Branching
-* Conditional branch (I-Type)  
-  * __equal__ (beq)
-  * __not equal__ (bne)
+[^Click Me]: Braching
+* Conditional branch (I-Type)   
+  * beq  rs, rt, Label  # Branch rs  =  rt
+  * bne  rs, rt, Label  # Branch rs !=  rt
+  * bgez rs, Label      # Branch rs >= zero
+  * bgtz rs, Label      # Branch rs  > zero
+  * blez rs, Label      # Branch rs <= zero
+  * bltz rs, Label      # Branch rs  < zero
   
   * Note:   
     *  PC = PC + 4 + offset * 4
@@ -190,9 +197,23 @@ As a sequence, if the OS saves the architectural state at some point in the prog
   * jump (j)
   * jump and link (jal)
     similar to j but is used by procedures to save a return address
-  * jump register (jr)
-    jumps to the address held in a register
-    e.g. addi $s0, $0, 0x2010
-         jr $s0  #jump to the address 0x00002010
+  * jump register (jr)  
+    jumps to the address held in a register  
+    e.g. addi $s0, $0, 0x2010  
+         jr $s0  #jump to the address 0x00002010  
         
 #### Conditional Statements
+* Conditional Branching above [^Click Me]
+* R-Type
+  * slt   rd, rs, rt    #  rd = 1 when rs < rt, otherwise rd = 0
+  * slti  rd, rs, rt
+* I-Type
+  * slti  rt, rs, imm   #  rt = 1 when rs < imm, otherwise rt = 0
+  * sltiu rt, rs, imm 
+
+#### Array
+High level language arraies in hardware are stored in main memory.
+* Access element(s)
+  load (generally lw - 4 bytes) (base address*)
+  but accessing large amount of elements may cause wasteful duplicated code
+  --> using for loop to iterate
