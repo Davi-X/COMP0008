@@ -15,19 +15,19 @@ Common architecture styles
   MIPS   
 Since it uses sequences of multiple simple instructions which are easily to encode & decode   
 * _Complex instruction set computers (CISC)_   
-  Intel's IA-32    
-  More elaborate operations are more common to use this
+  Intel's IA-32     
+  More elaborate operations are more common to use this  
    
-Microarchitecture:  
-The specific arrangement of registers, memories, ALUs, and other building blocks to form a microprocessor
+Microarchitecture:   
+The specific arrangement of registers, memories, ALUs, and other building blocks to form a microprocessor  
 
-Only single-line comments are used in assembly language
+Only single-line comments are used in assembly language   
 
-MIPS is a byte-addressable memory   
+MIPS is a byte-addressable memory     
 
-Operands are stored as constants or in registers (hold only a small amount of data)
-Additional data must be accessed from memory, which is large but **slow**
-so here we introduce registers
+Operands are stored as constants or in registers (hold only a small amount of data)  
+Additional data must be accessed from memory, which is large but **slow**  
+so here we introduce registers  
 Generally, the fewer the registers, the faster they can be accessed  
 
 **Design Principle** 
@@ -93,8 +93,8 @@ Generally, the fewer the registers, the faster they can be accessed
   * 2 register operands + 1 immediate operand
   * determined by *opcode* filed (no funct field)
   * rt as the destinition (sometimes)
-  * signed extension for immediates  
-  * zero extension only happens on logical operations
+  * signed extension for immediates in most cases  
+  * zero extension only happens on logical operations or possibly load operations
   * addi or addiu both signed extension
    the only difference is merging an expection of overflow or not 
 * J-type (i.e. Jump-type)
@@ -192,7 +192,8 @@ As a sequence, if the OS saves the architectural state at some point in the prog
   * Note:   
     *  PC = PC + 4 + offset * 4
     *  offset is no. instructions to branch over
-    *  Since it starts from the next instruction of this branch instruction, so first add 4, and does not count this instruction in offset
+    *  Since it starts from the next instruction of this branch instruction  
+      --> first add 4, and does not count this instruction in offset
 * Unconditional branch
   * jump (j)
   * jump and link (jal)
@@ -213,7 +214,19 @@ As a sequence, if the OS saves the architectural state at some point in the prog
 
 #### Array
 High level language arraies in hardware are stored in main memory.
-* Access element(s)
-  load (generally lw - 4 bytes) (base address*)
-  but accessing large amount of elements may cause wasteful duplicated code
-  --> using for loop to iterate
+* Access  & Modify element(s)  
+  load (generally lw - 4 bytes) (base address*)  
+  but accessing large amount of elements may cause wasteful duplicated code  
+  --> using for loop to iterate  
+
+  Note: Since we generally use lw which is 4 bytes  
+  need a temporary register to hold the byte offset (i.e. i*4)
+
+#### Bytes and Characters
+
+Because there are much fewer than 256 characters on an English keyboard, English characters are often represented by bytes
+
+Java use different character encodings, most nitably _Unicode_.
+which uses 16 bits to represent each character.
+
+Lower-case and upper-case letters differ by 0x20 (32)
