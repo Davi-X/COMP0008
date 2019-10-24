@@ -98,7 +98,12 @@ Generally, the fewer the registers, the faster they can be accessed
   * addi or addiu both signed extension
    the only difference is merging an expection of overflow or not 
 * J-type (i.e. Jump-type)
-  * 1 address operand (*addr* short for address)
+  * 1 address operand (*addr* 26-bit)
+    * 2 lsb are zero since work aligned 
+      * 4 -> 0100
+      * 8 -> 1000
+      * c -> 1100
+    * 4 msb are obtained from the 4 msb of PC + 4 
 
 
 The power of stored program
@@ -207,7 +212,7 @@ As a sequence, if the OS saves the architectural state at some point in the prog
 * Conditional Branching above [^Click Me]
 * R-Type
   * slt   rd, rs, rt    #  rd = 1 when rs < rt, otherwise rd = 0
-  * slti  rd, rs, rt
+  * sltu  rd, rs, rt
 * I-Type
   * slti  rt, rs, imm   #  rt = 1 when rs < imm, otherwise rt = 0
   * sltiu rt, rs, imm 
@@ -252,6 +257,10 @@ We also need a way to determine a string --> String have a variable length which
     * a2  $6  
     * a3  $7  
   * Additional input are placed on the stack  
+    * above $sp
+* Local Variables
+  * stored in _saved registers_ 
+  * Addition variables are stored in stack frame 
 * Return value
   * 2 registers to store
     * v0  $2
@@ -265,7 +274,8 @@ We also need a way to determine a string --> String have a variable length which
 * Stack pointer & Frame pointer  
   * $sp points to the top of the stack  
     * save and restore caller registers
-  *   
+  * $gp points to the 
+  TODO  
 * Categories
   * leaf function
     Α function that does not call others
@@ -276,7 +286,7 @@ We also need a way to determine a string --> String have a variable length which
 #### Function Calls and Returns
 MIPS use 
 * __jal__ to call a function   
-  jal Label
+  jal Label(Addrress)
 * __jr__  to return from a function  
   jr $ra
 
@@ -288,6 +298,20 @@ MIPS use
 * Growing --> growing _down_ in memory
 * The stack space that a function allocates for itself is called its *stack frame*
 
+:------------------------:  
+|                        |  
+|------------------------|   
+|  additional arguments  |                     
+|------------------------| <-old $sp --:  
+|  $a0 - $a3 (arguments) |     |       |  
+|------------------------|     |       |  
+|   $ra return address   |     | stack |  
+|------------------------|     |       |  
+| $s0 - $s7 (local vars) |     |       |  
+|------------------------|     | frame |  
+| additional local vars  |     |       |  
+|   & local arrays       |     V       |  
+:------------------------: <-new $sp --:  
 #### Preserved Registers
 * preserved registers / callee-save    
   must save and restore before jump to callee   
@@ -309,3 +333,49 @@ Note: Caller must save nonpreserved registers data before jumping into callee
 :-----------------------------------------------------------------:  
 
 #### Recursived Function Calls
+For _factorial_ as an exmaple
+  factorial:  # First, allocate space and return registers
+              addi $sp, $sp, 0x8008 (-8)
+              sw   $a0, 0x0004( $sp )
+              sw   $ra, 0x0000( $sp )
+              
+              # Use conditional statements to justfy n
+              slti $t0, $a0, 0x0002
+              bne  $t0, $0,  else
+
+              # If n < 2, go to Base Case
+              addi $v0, $0, 0x0001      # f(1) = 1
+              addi $sp, $sp, 0x0008(+8)     # Deallcoate stack space
+              ja $ra                    
+
+  else      : # n * f(n-1) here we need to jump to f(n-1)
+              addi $a0, $a0, -1
+              jal  factorial
+
+              # load and dedallocate stack space
+              lw   $a0,  0x0000($sp)
+              lw   $ra,  0x0004($sp)
+              addi $sp,  $sp, 0x0008(+8)
+
+              # multiple results (n * f(n-1)) & return result
+              mul $v0, $a0, $v0
+              jr  $ra
+
+### Addressing Mode
+* Register-Only Addressing
+  use register for all source and destination operands  
+  all R-Type  
+* Immediate Addressing  
+  immediates along with registers  
+  Some I-Type  
+* Base Addressing
+  using _base addressing_   
+  Memory access instructions  
+* PC-Relative Addressing
+  Conditional Branching Instructions    
+  Label is _branch target address_ (_BTA_)  
+  imm (offset) is no. instructions between the next instruction in the memory block to the BTA
+* Pseudo-Direct Addressing
+  address (_jump target address_ JTA) is specified in the instruction  
+  all J-Type  
+  Note: jump range is limited since 4msb are taken from PC + 4
