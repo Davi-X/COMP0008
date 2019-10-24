@@ -62,7 +62,7 @@ Generally, the fewer the registers, the faster they can be accessed
 * lw     load word
 * sw     store word
 * lb     load byte
-* sb     store byte
+* sb     store byte (LSB)
 
 #### How acutally are memories organized 
 * Big-Endian
@@ -135,7 +135,7 @@ As a sequence, if the OS saves the architectural state at some point in the prog
     * ori
     * xori 
 * Shift instructions (* / power of 2)   
-  R-Type operations
+  R-Type operations  
   [Shift instructions](https://slideplayer.com/slide/8236763/)  
   * 2 register operands + shamt (no. of bits)
   * 3 register operands 
@@ -213,20 +213,99 @@ As a sequence, if the OS saves the architectural state at some point in the prog
   * sltiu rt, rs, imm 
 
 #### Array
-High level language arraies in hardware are stored in main memory.
-* Access  & Modify element(s)  
+High level language arraies in hardware are stored in main memory.  
+* Access & Modify element(s)  
   load (generally lw - 4 bytes) (base address*)  
   but accessing large amount of elements may cause wasteful duplicated code  
   --> using for loop to iterate  
 
-  Note: Since we generally use lw which is 4 bytes  
+  Note: 
+  1. Since we generally use lw which is 4 bytes   
   need a temporary register to hold the byte offset (i.e. i*4)
+  2. Since lw, sw are I-Types, need immediates which cannot change or be replaced by a register --> change the base address for each iteration (which use a temporary registers to hold)  
 
 #### Bytes and Characters
 
-Because there are much fewer than 256 characters on an English keyboard, English characters are often represented by bytes
+Because there are much fewer than 256 characters on an English keyboard,  English characters are often represented by bytes  
 
 Java use different character encodings, most nitably _Unicode_.
-which uses 16 bits to represent each character.
+which uses 16 bits to represent each character.  
 
-Lower-case and upper-case letters differ by 0x20 (32)
+Lower-case and upper-case letters differ by 0x20 (32)  
+
+History  
+  1. Morse Code (dots and dashes)
+  2. Baudot Code (5 bits, not sufficiently for all characters)
+  3. ASCII Code
+
+lb, lbu, sb are depending on the style of this architecture  
+* Little endian
+* Big endian 
+  
+We also need a way to determine a string --> String have a variable length which is a built-in functions for most programming languages
+
+### Functions
+* Arguments
+  * 4 registers to store
+    * a0  $4  
+    * a1  $5  
+    * a2  $6  
+    * a3  $7  
+  * Additional input are placed on the stack  
+* Return value
+  * 2 registers to store
+    * v0  $2
+    * v1  $3  
+      * returning double-precision float 
+      * generating 2 32-bit results
+* Return Address  
+  * $ra     
+    * Store it when caller jumps to the callee (jal)
+    * Store the next instruction of jal
+* Stack pointer & Frame pointer  
+  * $sp points to the top of the stack  
+    * save and restore caller registers
+  *   
+* Categories
+  * leaf function
+    Α function that does not call others
+  * nonleaf function  
+   A function that does call others
+   
+
+#### Function Calls and Returns
+MIPS use 
+* __jal__ to call a function   
+  jal Label
+* __jr__  to return from a function  
+  jr $ra
+
+#### The Stack
+* Definition:  
+  The stack is memory that is used to save local variables within a function
+* _last-in-first-out_ (_LIFO) queue  
+* Each function may allocate stack space to store local variables but must deallocate it before returning 
+* Growing --> growing _down_ in memory
+* The stack space that a function allocates for itself is called its *stack frame*
+
+#### Preserved Registers
+* preserved registers / callee-save    
+  must save and restore before jump to callee   
+  * saved           $s0 - $s7  (Usually store loacal variables)
+  * return address  $ra  
+  * stack pointer   $sp
+    Note: Rember that the stack above the stack pointer is automatically preserved ALA (as long as) the callee does not write to memory addresses above $sp
+* nonpreserved registers / caller-save
+  change freely in callee, no need to save and restore in callee before executation   
+  * temporary     $t0 - $t9   (rare that the caller needs to save)  
+  * arguments     $a0 - $a3  
+  * return value  $v0 - &v1    
+
+Note: Caller must save nonpreserved registers data before jumping into callee   
+:-----------------------------------------------------------------:  
+|             |    Caller      ---------->       Callee           |  
+| callee-save |   Nothing                save & restore -> Change |     
+| caller-save | save and store                   Change           |  
+:-----------------------------------------------------------------:  
+
+#### Recursived Function Calls
