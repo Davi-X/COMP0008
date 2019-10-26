@@ -379,3 +379,36 @@ For _factorial_ as an exmaple
   address (_jump target address_ JTA) is specified in the instruction  
   all J-Type  
   Note: jump range is limited since 4msb are taken from PC + 4
+
+### Compling Assembling, Loading --> Big Picture
+
+#### Memory Map
+320bit addresses, _address space spans 2^32 bytes = 4GB
+0 - 0xFFFFFFFC
+from lowe - high
+
+* Text Segement
+  * stores machine code
+  * almost 256MB of code
+* Global Data Segement
+  * store global varibales
+  * are defined at start-up (i.e. before the program begins executing)
+  * 64KB size
+  * using $gp (initialized to 0x100080000)
+  * access using 16-bit signed offset at assembly time
+* Dynamic Data Segement
+  * holds stack and heap 
+  * spanning almost 2GB
+  * report out-of-memory error when data corrupted(i.e. meet each other)
+  * stack
+    * save and restore local variables and data structures
+    * goes downward from the top (0x7FFFFFFC) 
+    * LIFO
+  * heap
+    * stores data is allocated by the program during runtime (e.g. malloc / new )
+    * grows upward from the bottom
+* Reserved Segment
+  * used by OS
+  * part of it is used for interrupts and memory-mapped I/O
+
+#### Translating and Starting a Program
