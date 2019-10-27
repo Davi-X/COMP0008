@@ -383,7 +383,7 @@ For _factorial_ as an exmaple
 ### Compling Assembling, Loading --> Big Picture
 
 #### Memory Map
-320bit addresses, _address space spans 2^32 bytes = 4GB
+32-bit addresses, _address space spans 2^32 bytes = 4GB
 0 - 0xFFFFFFFC
 from lowe - high
 
@@ -412,3 +412,42 @@ from lowe - high
   * part of it is used for interrupts and memory-mapped I/O
 
 #### Translating and Starting a Program
+  High-Level Code  
+         |  
+  :-------------:  
+  |  Complier   |  
+  :-------------:  
+         |  
+   Assembly Code    
+         |       
+  :-------------:  
+  |  Assembler  |  
+  :-------------:    
+         |   
+    Object File    
+         |       
+  :-------------:  
+  |    Linker   | <- Object Files / Library Files  
+  :-------------:     (Result from the linker combines these)  
+         |  
+    Executable    
+         |      
+  :-------------:  
+  |    Loader   |  
+  :-------------:   
+         |  
+       Memory  
+
+1. Compliation
+   * assembler directives   
+     indicate where the corresponding segements begin  
+     e.g. .data .text  
+2. Assembling
+   Two passes  
+   1. assembler assigns instruction addresses and finds all the symbols(labels and global variables)  
+   * Symbol Table (consists of names and addresses of symbols)  
+   * global variables are assigned in global data segment of memory  
+     starting at 0x10000000  
+   2. machine language code & symbol table are stored in the object file  
+3. Linking
+  
