@@ -292,26 +292,20 @@ MIPS use
 
 #### The Stack
 * Definition:  
-  The stack is memory that is used to save local variables within a function
-* _last-in-first-out_ (_LIFO) queue  
-* Each function may allocate stack space to store local variables but must deallocate it before returning 
-* Growing --> growing _down_ in memory
-* The stack space that a function allocates for itself is called its *stack frame*
+  The stack is memory that is used to save local variables within a function  
+* _last-in-first-out_ (_LIFO) queue     
+* Each function may allocate stack space to store local variables but must deallocate it before returning   
+* Growing --> growing _down_ in memory  
+* The stack space that a function allocates for itself is called its *stack frame*  
 
-:------------------------:  
-|                        |  
-|------------------------|   
-|  additional arguments  |                     
-|------------------------| <-old $sp --:  
-|  $a0 - $a3 (arguments) |     |       |  
-|------------------------|     |       |  
-|   $ra return address   |     | stack |  
-|------------------------|     |       |  
-| $s0 - $s7 (local vars) |     |       |  
-|------------------------|     | frame |  
-| additional local vars  |     |       |  
-|   & local arrays       |     V       |  
-:------------------------: <-new $sp --:  
+|                Memory                 |      $sp      |
+|:-------------------------------------:|:-------------:|      
+| additional arguments                  |   old $sp     | 
+|  $a0 - $a3 (arguments)                |               |   
+|   $ra return address                  |               |  
+| $s0 - $s7 (local vars)                |               |  
+| additional local vars & local arrays  |   new $sp     |  
+                                           
 #### Preserved Registers
 * preserved registers / callee-save    
   must save and restore before jump to callee   
@@ -325,12 +319,13 @@ MIPS use
   * arguments     $a0 - $a3  
   * return value  $v0 - &v1    
 
-Note: Caller must save nonpreserved registers data before jumping into callee   
-:-----------------------------------------------------------------:  
-|             |    Caller      ---------->       Callee           |  
-| callee-save |   Nothing                save & restore -> Change |     
-| caller-save | save and store                   Change           |  
-:-----------------------------------------------------------------:  
+Note: Caller must save nonpreserved registers data before jumping into callee  
+
+|              |                    |                                  |
+|:------------:|:------------------:|:--------------------------------:|  
+|              |    Caller          |                  Callee          |  
+| callee-save  |   Nothing          |      save & restore -> Change    |     
+| caller-save  | save and store     |              Change              |    
 
 #### Recursived Function Calls
 For _factorial_ as an exmaple
@@ -444,10 +439,10 @@ from lowe - high
      e.g. .data .text  
 2. Assembling
    Two passes  
-   1. assembler assigns instruction addresses and finds all the symbols(labels and global variables)  
+   1. assigns instruction addresses and finds all the symbols(labels and global variables)  
    * Symbol Table (consists of names and addresses of symbols)  
    * global variables are assigned in global data segment of memory  
      starting at 0x10000000  
-   2. machine language code & symbol table are stored in the object file  
+   1. produce machine language code & symbol table are stored in the object file  
 3. Linking
   
