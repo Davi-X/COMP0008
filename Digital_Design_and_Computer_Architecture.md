@@ -407,31 +407,17 @@ from lowe - high
   * part of it is used for interrupts and memory-mapped I/O
 
 #### Translating and Starting a Program
-  High-Level Code  
-         |  
-  :-------------:  
-  |  Complier   |  
-  :-------------:  
-         |  
-   Assembly Code    
-         |       
-  :-------------:  
-  |  Assembler  |  
-  :-------------:    
-         |   
-    Object File    
-         |       
-  :-------------:  
-  |    Linker   | <- Object Files / Library Files  
-  :-------------:     (Result from the linker combines these)  
-         |  
-    Executable    
-         |      
-  :-------------:  
-  |    Loader   |  
-  :-------------:   
-         |  
-       Memory  
+|   Mechanism    |     Resources    |
+|:--------------:|:----------------:|  
+|                |  High-Level Code |
+|    Complier    |                  |
+|                |   Assembly Code  |
+|    Assembler   |                  |
+|                |    Object File   |
+|    Linker      |                  |
+|                |    Εxecutable    |  
+|     Loader     |                  |
+|                |      Memory      |
 
 1. Compliation
    * assembler directives   
