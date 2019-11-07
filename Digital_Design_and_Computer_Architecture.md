@@ -416,7 +416,7 @@ from lowe - high
 |                |    Object File   |
 |    Linker      |                  |
 |                |    Εxecutable    |  
-|     Loader     |                  |
+|    Loader      |                  |
 |                |      Memory      |
 
 1. Compliation
@@ -426,9 +426,16 @@ from lowe - high
 2. Assembling
    Two passes  
    1. assigns instruction addresses and finds all the symbols(labels and global variables)  
-   * Symbol Table (consists of names and addresses of symbols)  
-   * global variables are assigned in global data segment of memory  
-     starting at 0x10000000  
-   1. produce machine language code & symbol table are stored in the object file  
+   Symbol Table (consists of names and addresses of symbols)  
+  
+   |  Symbol  |     Address  |
+   |:--------:|:------------:|
+   |    f     |  0x10000000  |
+   |    g     |  0x10000004  |
+   |    y     |  0x10000008  |
+   |    main  |  0x00400000  |
+   |    sum   |  0x0040002C  |
+
+   2. produce machine language code & symbol table are stored in the object file  
 3. Linking
   
