@@ -357,30 +357,30 @@ For _factorial_ as an exmaple
               jr  $ra
 
 ### Addressing Mode
-* Register-Only Addressing
+* Register-Only Addressing  
   use register for all source and destination operands  
   all R-Type  
-* Immediate Addressing  
+* Immediate Addressing   
   immediates along with registers  
   Some I-Type  
-* Base Addressing
+* Base Addressing  
   using _base addressing_   
   Memory access instructions  
-* PC-Relative Addressing
+* PC-Relative Addressing  
   Conditional Branching Instructions    
-  Label is _branch target address_ (_BTA_)  
+  Label is _branch target address_ (_BTA_)   
   imm (offset) is no. instructions between the next instruction in the memory block to the BTA
 * Pseudo-Direct Addressing
-  address (_jump target address_ JTA) is specified in the instruction  
-  all J-Type  
-  Note: jump range is limited since 4msb are taken from PC + 4
+  address (_jump target address_ JTA) is specified in the instruction   
+  all J-Type   
+  Note: jump range is limited since 4msb are taken from PC + 4  
 
 ### Compling Assembling, Loading --> Big Picture
 
 #### Memory Map
-32-bit addresses, _address space spans 2^32 bytes = 4GB
-0 - 0xFFFFFFFC
-from lowe - high
+32-bit addresses, _address space spans 2^32 bytes = 4GB  
+0 - 0xFFFFFFFC  
+from lowe - high  
 
 * Text Segement
   * stores machine code
@@ -424,7 +424,7 @@ from lowe - high
      indicate where the corresponding segements begin  
      e.g. .data .text  
 2. Assembling
-   Two passes  
+   Two passes    
    1. assigns instruction addresses and finds all the symbols(labels and global variables)  
    Symbol Table (consists of names and addresses of symbols)  
   
@@ -437,10 +437,10 @@ from lowe - high
    |    sum   |  0x0040002C  |
 
    2. produce machine language code & symbol table are stored in the object file  
-3. Linking
+3. Linking  
    combine all og the object files into one machine language file _executable_
-   Use the symbol tables to adjust the addresses of global variables and of labels that are relocated 
-   It relocates the data and instructions in the object file so that they are not all on top of each other
+   Use the symbol tables to adjust the addresses of global variables and of labels that are relocated   
+   It relocates the data and instructions in the object file so that they are not all on top of each other  
 
    Executable file
 
@@ -473,14 +473,18 @@ from lowe - high
   3. OS sets $sp to 0x7FFFFFFC (top of the dynamic data segement)
   4. jal 0x00400000 jump to the beginning of the program
 
-Summary 
-test.c (high-level code) -> test.s (assembly code) -> test.o (Object file) -> a.out (Executable) (into the Hard Disk / Soild State Device) -> Memory (Main Memory RAM (SRAM / DRAM))
+Summary   
+test.c (high-level code) ->   
+test.s (assembly code) ->   
+test.o (Object file) ->   
+a.out (Executable) (into the Hard Disk / Soild State Device) ->   
+Memory (Main Memory RAM (SRAM / DRAM))  
 
-Binary Executable File on Hard Disk
--->
-The OS calls a 'loader' program to load the executable file into RAM following rge MIPS memory map
+Binary Executable File on Hard Disk    
+-->    
+The OS calls a 'loader' program to load the executable file into RAM following rge MIPS memory map  
 
-An 'image file' is just a direct copy of the values making up this memory map layout for a particular process
+An 'image file' is just a direct copy of the values making up this memory map layout for a particular process  
 
 1. On start-up, CPU reads machine code instructions from ROM / NOR Flash that boots up machine
 2. BIOS (Basic I/O) checks hardware, sets up device drivers for I/O, then transfer Grub loader from disk into RAM and executes it
@@ -488,7 +492,7 @@ An 'image file' is just a direct copy of the values making up this memory map la
 4. Running OS then allows user to 'load' executables from hard disk into RAM and run these
 
 
-Key concepts booting up a machine
+Key concepts booting up a machine  
 * CPU can only execute machine code stored in
   * ROM
   * NOR Flash
@@ -501,45 +505,45 @@ Key concepts booting up a machine
 ## Chapter 7 Microarchitecture
 
 ### Introduction
-Microarchitecture is the connection between logic and architecture
+Microarchitecture is the connection between logic and architecture  
 
-A computer architecture is defined by its instruction set and _architecture state_.
-In MIPS, it consists of the PC & 32 registers as the basic architecture state.
-Some contain additional _nonarchitectural state_ to 
+A computer architecture is defined by its instruction set and _architecture state_.  
+In MIPS, it consists of the PC & 32 registers as the basic architecture state.  
+Some contain additional _nonarchitectural state_ to   
 * simplify the logic 
 * improve performance 
 
-Basic subset of the MIPS instruction set
+Basic subset of the MIPS instruction set  
 * R-Type: add sub and or slt
 * Memory instructions: lw, sw
 * Branches: beq
 
 #### Design Process
-microarchitectures
-* 32- bit datapath 
+microarchitectures  
+* 32- bit datapath   
   * operates on words of data
-* control 
+* control   
   * receives instruction from datapath and tells it how to execute it
 
 Design a complex system
-1. start with hardware containing the state elements 
+1. start with hardware containing the state elements   
   * memories 
   * architectural state (PC + 32 registers)
 2. Add blocks of combinational logic between state elements to compute the new state based on the current state 
 
-Since the instruction is 
+Since the instruction is   
 * read from part of memory
 * load and store instructions, read or write data from another part of memory
 
-Partition the overall memory into 2 smaller memories 
-* containing instructions 
-* containing data
+Partition the overall memory into 2 smaller memories  
+* containing instructions  
+* containing data  
 
--- heavy lines indicate 32-bit data busses
--- medium lines indicate barrower busses 5-bit address busses
+-- heavy lines indicate 32-bit data busses  
+-- medium lines indicate barrower busses 5-bit address busses  
 -- narror blue lines indicate control singals
-e.g. register file write enable
--- state elements usually have a reset input to put them into a  known state at start-up, which is not shown to save clutter
+e.g. register file write enable  
+-- state elements usually have a reset input to put them into a  known state at start-up, which is not shown to save clutter  
 
 MIPS initialise the PC to 0xBFC00000 on reset  and begin executing code to start up the OS
 OS then loads an application at 0x0040000  and begins executing machine code
@@ -563,9 +567,9 @@ register file
   when WE3 == 1, register file writes the data  into the specified register on the rising edge of the clock 
 * 1 clock
   
-data memory 
-* single read/write port
-  write enable input WE
+data memory   
+* single read/write port  
+  write enable input WE  
   * WE = 1, writes data WD into address A 
   * wE = 0, reads address A onto RD 
   
@@ -586,32 +590,32 @@ Three microarchitectures
   * must add logic to handle dependencies between simultameously executing unstructions 
   * requires nonarchitectural pipeline registers
 
-### Performance analysis
-1. Measuring the execution time of a program of interest to you 
-2. Measure the total execution time of a collection of programs that are similar you plan to run (benchmarks)
-   Execution time of a program:
-   Execution Time = (# instructions) (cycles/instructions)(seconds/cycle)
+### Performance analysis  
+1. Measuring the execution time of a program of interest to you  
+2. Measure the total execution time of a collection of programs that are similar you plan to run (benchmarks)  
+   Execution time of a program:  
+   Execution Time = (# instructions) (cycles/instructions)(seconds/cycle)  
 
 Number of instructions depend on 
 * processor architecture
   complicated instructions do more work per instruction --> reducing the number of instructions (they are slower to execute in hardware)
 * The cleverness of the programmer
 
-Assume contant here
+Assume contant here  
 
-number of cycles per instruction  CPI
-instructions per cycle            IPC
+number of cycles per instruction  CPI  
+instructions per cycle            IPC  
 
-clock period Tc, is determined by the critical path through the logic on the processor
+clock period Tc, is determined by the critical path through the logic on the processor  
 
 ## Single-cycle processor
-ALU (Arithmetic Logical Unit)
-[ALUControl signal reference](https://www.cise.ufl.edu/~mssz/CompOrg/Table4.2-MIPSdatapath-ALUcontrol.gif)
+ALU (Arithmetic Logical Unit)   
+[ALUControl signal reference](https://www.cise.ufl.edu/~mssz/CompOrg/Table4.2-MIPSdatapath-ALUcontrol.gif)   
 * 3-bit ALUControl singal
 * ALUResult 32-bit 
 * Zero flag to indicate whether ALUResult == 0
 
-lw instruction
+lw instruction 
 1. The instruction memory fetches the instruction from PC
 2. read the source register operand,reads the register value onto RD1
 3. sign extends the immediates
@@ -619,10 +623,10 @@ lw instruction
 5. ReadData bus is connected to the WD3, rt in lw is connected to A3 and a control unit _RegWrite_ 
 6. Use another adder to compute the next instruction address, and write it on the next rising edge of the clock
 
-[After lw](https://image1.slideserve.com/2359649/single-cycle-mips-pc-n.jpg)
+[After lw](https://image1.slideserve.com/2359649/single-cycle-mips-pc-n.jpg)  
 
-sw instruction
-1-4 are the same 
+sw instruction  
+1-4 are the same   
 5.
  * ReadData bus is connected to the WD3, 
  * rt in sw is connected to A2, WE3 = 0
@@ -631,5 +635,5 @@ sw instruction
    MemWrite = 1, Write data into the data memory
 6. same as above
 
-R-Type Instruction
-TODO
+R-Type Instruction  
+TODO  
