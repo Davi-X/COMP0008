@@ -1,7 +1,7 @@
 
 # Digital design and Computer architecture (2007)
 
-## Chapter 6
+## Chapter 6 Architecture
 
 ### Introduction
 
@@ -389,7 +389,7 @@ from lowe - high
   * store global varibales
   * are defined at start-up (i.e. before the program begins executing)
   * 64KB size
-  * using $gp (initialized to 0x100080000)
+  * using $gp (initialized to 0x100080000) as the base register (sign-extened)
   * access using 16-bit signed offset at assembly time
 * Dynamic Data Segement
   * holds stack and heap 
@@ -438,4 +438,198 @@ from lowe - high
 
    2. produce machine language code & symbol table are stored in the object file  
 3. Linking
+   combine all og the object files into one machine language file _executable_
+   Use the symbol tables to adjust the addresses of global variables and of labels that are relocated 
+   It relocates the data and instructions in the object file so that they are not all on top of each other
+
+   Executable file
+
+  |  file header  |   Text Size   |   Data Size   |
+  |:-------------:|:-------------:|:-------------:|
+  |               | 0x34(52 bytes)| 0xC(12 bytes) | 
+
+  | Text Segement |    Address    |  Instruction  |
+  |:-------------:|:-------------:|:-------------:|
+  |               |  0x00400000   |  0x23BDFFFC   |
+  |               |  0x00400004   |  0xAFBF0000   |
+  |               |  0x00400008   |  0x20040002   |
+  |               |  0x0040000C   |  0xAF848000   |
+  |               |  0x00400010   |  0x20050003   |
+  |               |  0x00400014   |  0xAF858004   |
+  |               |  0x00400018   |  0x0C10000B   |
+  |               |  0x0040001C   |  0xAF828008   |
+  |               |  0x00400020   |  0x8FBF0000   |
+  |               |      ...      |      ...      |    
+
+  | Data Segement |    Address    |     Data      |
+  |:-------------:|:-------------:|:-------------:|
+  |               |  0x10000000   |       f       |
+  |               |  0x10000004   |       g       |
+  |               |  0x10000008   |       y       |
+
+4. Loading
+  1. read from a storage device (usually the hard disk)
+  2. OS sets $gp to 0x10008000 (middle of the global data segement)
+  3. OS sets $sp to 0x7FFFFFFC (top of the dynamic data segement)
+  4. jal 0x00400000 jump to the beginning of the program
+
+Summary 
+test.c (high-level code) -> test.s (assembly code) -> test.o (Object file) -> a.out (Executable) (into the Hard Disk / Soild State Device) -> Memory (Main Memory RAM (SRAM / DRAM))
+
+Binary Executable File on Hard Disk
+-->
+The OS calls a 'loader' program to load the executable file into RAM following rge MIPS memory map
+
+An 'image file' is just a direct copy of the values making up this memory map layout for a particular process
+
+1. On start-up, CPU reads machine code instructions from ROM / NOR Flash that boots up machine
+2. BIOS (Basic I/O) checks hardware, sets up device drivers for I/O, then transfer Grub loader from disk into RAM and executes it
+3. The Grub loader then loads an 'image' of an OS kernel from hard disk into RAM which then executed it
+4. Running OS then allows user to 'load' executables from hard disk into RAM and run these
+
+
+Key concepts booting up a machine
+* CPU can only execute machine code stored in
+  * ROM
+  * NOR Flash
+  * main RAM memory
+* Data on other types of storage cannot be executed directly -> load into RAM first
+*  CPU starts executing BIOS in ROM/Flash at a specified memory address which checks the hardware and loads device drivers for basic I/O like hard disks, SSD, NAND Flash memory
+*  BIOS then loads an '__image file__' of a more specific boot loader from the 'boot sector' of the hard disk into RAM 
+*  This in turn can load an '__image file__' for the linux kernel from the hard disk into RAM 
+
+## Chapter 7 Microarchitecture
+
+### Introduction
+Microarchitecture is the connection between logic and architecture
+
+A computer architecture is defined by its instruction set and _architecture state_.
+In MIPS, it consists of the PC & 32 registers as the basic architecture state.
+Some contain additional _nonarchitectural state_ to 
+* simplify the logic 
+* improve performance 
+
+Basic subset of the MIPS instruction set
+* R-Type: add sub and or slt
+* Memory instructions: lw, sw
+* Branches: beq
+
+#### Design Process
+microarchitectures
+* 32- bit datapath 
+  * operates on words of data
+* control 
+  * receives instruction from datapath and tells it how to execute it
+
+Design a complex system
+1. start with hardware containing the state elements 
+  * memories 
+  * architectural state (PC + 32 registers)
+2. Add blocks of combinational logic between state elements to compute the new state based on the current state 
+
+Since the instruction is 
+* read from part of memory
+* load and store instructions, read or write data from another part of memory
+
+Partition the overall memory into 2 smaller memories 
+* containing instructions 
+* containing data
+
+-- heavy lines indicate 32-bit data busses
+-- medium lines indicate barrower busses 5-bit address busses
+-- narror blue lines indicate control singals
+e.g. register file write enable
+-- state elements usually have a reset input to put them into a  known state at start-up, which is not shown to save clutter
+
+MIPS initialise the PC to 0xBFC00000 on reset  and begin executing code to start up the OS
+OS then loads an application at 0x0040000  and begins executing machine code
+
+PC input indicates the address of the next instruction 
+   output points to the current instruction
+
+instruction memory
+*  signle read port A, takes the instruction adress input
+*  single read data output RD, reads the instruction from the address onto RD
   
+register file
+* 2 read ports A1, A2
+  each specifying one of the registers as source operands
+* 2 read data outputs RD1, RD2
+  the register value from A1 and A2 are read onto RD1 and RD2
+* 1 write port 
+  takes 5-bit address input A3
+  32-bit write data input WD
+* 1 write enable input WE3
+  when WE3 == 1, register file writes the data  into the specified register on the rising edge of the clock 
+* 1 clock
+  
+data memory 
+* single read/write port
+  write enable input WE
+  * WE = 1, writes data WD into address A 
+  * wE = 0, reads address A onto RD 
+  
+#### MIPS Microarchitectures
+Three microarchitectures
+* Single-cycle  
+  * executes an entire instruction in one cycle
+  * a simple control unit  
+  * No nonarchitectural state
+  * cycle time is limited by the slowest instruction
+* Multicycle
+  * executes in a series of shorter cycles
+  * Reduces the hardware cost by reusing expensive hardware blocks
+  * Adding several nonarchitectural registers to hold intermediate results
+* Pipelined
+  * applies pipelining to the single-cycle microarchitecture
+  * exectue several instructions simultaneously
+  * must add logic to handle dependencies between simultameously executing unstructions 
+  * requires nonarchitectural pipeline registers
+
+### Performance analysis
+1. Measuring the execution time of a program of interest to you 
+2. Measure the total execution time of a collection of programs that are similar you plan to run (benchmarks)
+   Execution time of a program:
+   Execution Time = (# instructions) (cycles/instructions)(seconds/cycle)
+
+Number of instructions depend on 
+* processor architecture
+  complicated instructions do more work per instruction --> reducing the number of instructions (they are slower to execute in hardware)
+* The cleverness of the programmer
+
+Assume contant here
+
+number of cycles per instruction  CPI
+instructions per cycle            IPC
+
+clock period Tc, is determined by the critical path through the logic on the processor
+
+## Single-cycle processor
+ALU (Arithmetic Logical Unit)
+[ALUControl signal reference](https://www.cise.ufl.edu/~mssz/CompOrg/Table4.2-MIPSdatapath-ALUcontrol.gif)
+* 3-bit ALUControl singal
+* ALUResult 32-bit 
+* Zero flag to indicate whether ALUResult == 0
+
+lw instruction
+1. The instruction memory fetches the instruction from PC
+2. read the source register operand,reads the register value onto RD1
+3. sign extends the immediates
+4. Use ALU to perform the addition of SrcA + SignImm, ALUResult connected to A in Data Memory
+5. ReadData bus is connected to the WD3, rt in lw is connected to A3 and a control unit _RegWrite_ 
+6. Use another adder to compute the next instruction address, and write it on the next rising edge of the clock
+
+[After lw](https://image1.slideserve.com/2359649/single-cycle-mips-pc-n.jpg)
+
+sw instruction
+1-4 are the same 
+5.
+ * ReadData bus is connected to the WD3, 
+ * rt in sw is connected to A2, WE3 = 0
+ * register value is read onto the RD2, connected to write data port of the data memory 
+ * WE in data memory is controlled by _MemWrite_
+   MemWrite = 1, Write data into the data memory
+6. same as above
+
+R-Type Instruction
+TODO

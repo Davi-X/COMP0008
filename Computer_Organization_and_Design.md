@@ -135,7 +135,19 @@ automatic var == local var
 MIPS use _global pointer_ $gp to simplify access the static data 
 
 stack also store arrays or structures
+since arrays tend to be a fixed memory
 
 Procedure frame / Activation record: The segement of the stack containing a procedure;s saved registers and local variables
 -->
 _frame pointer_ ($fp) points the first world of the frame or a procedure
+It offers a base register within a procedure for local memory references
+But if there are no local variables on the stack within a procedure, the complier will save time by _not_ setting and restoring $fp
+
+|                |                   |
+|:--------------:|:-----------------:|
+|      Stack     | $sp -> 7fff fffc  |
+|      ...       |                   |
+|  Dynamic data  |                   |
+|  Static data   | $gp -> 1000 8000  |
+|      Text      |        1000 0000  |
+|    Reserved    |  pc -> 0040 0000  |
