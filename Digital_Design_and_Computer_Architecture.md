@@ -323,7 +323,7 @@ Note: Caller must save nonpreserved registers data before jumping into callee
 
 |              |                    |                                  |
 |:------------:|:------------------:|:--------------------------------:|  
-|              |    Caller          |                  Callee          |  
+|              |    Caller          |              Callee              |  
 | callee-save  |   Nothing          |      save & restore -> Change    |     
 | caller-save  | save and store     |              Change              |    
 
@@ -636,16 +636,50 @@ sw instruction
 6. same as above
 
 R-Type Instruction  
-We add a multiplexer to choose _SrcB_ from either RD2 or _SignImm_
-which is controlled by _ALUSrc_
-* ALUSrc = 0 --> R-type
+We add a multiplexer to choose _SrcB_ from either RD2 or _SignImm_  
+which is controlled by _ALUSrc_  
+* ALUSrc = 0 --> use 2nd register 
 * ALUSrc = 1 --> SignImm
 
 This enhance the datapath's capabilities
 
-Add another multiplexer to choose between _ReadData_ and _ALUResult_
-which is controlled by _MemtoReg_
-* MemtoReg = 0 --> R-type
-* MemtoReg = 1 --> lw, sw (ReadData)
+Add another multiplexer to choose between _ReadData_ and _ALUResult_  
+which is controlled by _MemtoReg_  
+* MemtoReg = 0 --> write new values in register filesss
+* MemtoReg = 1 --> lw (ReadData)
+
+Another multiplexer when writing values into the register file  
+choose between writing into rd in R-type or write into rt in lw instruction  
+which is controlled by _RegDst_  
+* RegDst = 0 --> lw
+* RegDst = 1 --> R-type
+
+Branch  
+* compares 2 registers by computing _SrcA - SrcB_ (i.e. ALUControl = 110)
+* _Zero_ flag to indicate whether they are equal or not
+* jump to PC + 4 + _SignImm_ << 2
+
+Add a forth multiplexer to control PC' = new address or PC + 4
+which is controlled by _PCSrc_
+* PCSrc = 0 --> jump to new addess
+* PCSrc = 1 --> PC + 4
 
 
+
+### Single-Cycle Control
+It uses _opcode_ and _funct_ to control signals
+
+Even most are determined by opcode, but for R-type mainly look at funct field
+-->
+Factoring the control unit into 2 blocks of combinational logic
+opcode -- Main decoder (MemtoReg / MemWrite / Branch / ALUSrc / RegDst / RegWrite)
+            --(ALUOp)--> (from Main decoder to ALU decoder) 
+funct  -- ALU Decoder (ALUControl)
+ALU Decoder use ALUOp & funct conjunction to compute ALUControl
+
+|  ALUop  |  Meaning    |        
+|:-------:|:-----------:|
+|   00    |    add      |
+|   01    |  substract  |
+|   10    | go to funct |
+|   11    |    n/a      |
