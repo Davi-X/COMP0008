@@ -636,4 +636,16 @@ sw instruction
 6. same as above
 
 R-Type Instruction  
-TODO  
+We add a multiplexer to choose _SrcB_ from either RD2 or _SignImm_
+which is controlled by _ALUSrc_
+* ALUSrc = 0 --> R-type
+* ALUSrc = 1 --> SignImm
+
+This enhance the datapath's capabilities
+
+Add another multiplexer to choose between _ReadData_ and _ALUResult_
+which is controlled by _MemtoReg_
+* MemtoReg = 0 --> R-type
+* MemtoReg = 1 --> lw, sw (ReadData)
+
+
